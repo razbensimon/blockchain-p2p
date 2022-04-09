@@ -37,7 +37,7 @@ console.log();
 console.log(`Balance is ${razCoin.getBalanceOfAddress(myWalletAddress)}`);
 
 // Uncomment this line if you want to test tampering with the chain
-// razCoin.chain[1].transactions[0].amount = 10;
+//(razCoin as any).chain[1].transactions[0].amount = 10;
 
 // Check if the chain is valid
 console.log();
