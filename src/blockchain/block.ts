@@ -1,13 +1,15 @@
-import { MerkleTree } from 'merkletreejs';
 import SHA256 from 'crypto-js/sha256';
+import { MerkleTree } from 'merkletreejs';
+import { BloomFilter } from 'bloom-filters';
 import { Transaction } from './transaction';
 
 class Block {
   private nonce: number;
   private _previousHash: string = null!;
   private _hash: string = null!;
-  private tree: MerkleTree;
   private readonly _transactions: ReadonlyArray<Transaction> = [];
+  private tree: MerkleTree;
+  private filter: BloomFilter;
 
   constructor(private timestamp: number, transactions: ReadonlyArray<Transaction>, previousHash: string = '') {
     this._transactions = transactions;
@@ -19,6 +21,13 @@ class Block {
     this.tree = new MerkleTree(leaves, SHA256);
 
     this.hash = this.calculateHash();
+
+    // Create bloom filter optimal for a collections of items and a desired error rate
+    const errorRate = 0.04;
+    this.filter = BloomFilter.from(leaves, errorRate);
+    for (let transaction of this.transactions) {
+      this.filter.add(transaction.calculateHash());
+    }
   }
 
   public get hash(): string {
@@ -77,6 +86,12 @@ class Block {
     }
 
     return true;
+  }
+
+  hasTransactionInBlock(transaction: Transaction): boolean {
+    // 'false' is truly false
+    // 'true' may be false positive
+    return this.filter.has(transaction.calculateHash());
   }
 }
 

@@ -40,9 +40,8 @@ class Blockchain {
     const block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
     block.mineBlock(this.difficulty);
 
-    console.log('Block successfully mined!');
+    //console.log('Block successfully mined!');
     this.chain.push(block);
-
     this.pendingTransactions = [];
   }
 
@@ -87,7 +86,7 @@ class Blockchain {
     }
 
     this.pendingTransactions.push(transaction);
-    console.log('transaction added: %s', transaction);
+    //console.log('transaction added: %s', transaction);
   }
 
   /**

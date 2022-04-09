@@ -30,14 +30,20 @@ tx2.signTransaction(myKey);
 razCoin.addTransaction(tx2);
 console.log('tx2 hash', tx2.calculateHash());
 
-// Create 3rd transaction
+// Create 3rd transaction in same block
 const tx3 = new Transaction(myWalletAddress, 'address1', 10);
 tx3.signTransaction(myKey);
 razCoin.addTransaction(tx3);
 console.log('tx3 hash', tx3.calculateHash());
 
+// Use bloom filter to search if transaction exists on block:
+console.log('is tx3 exists on block: ', razCoin.getLatestBlock().hasTransactionInBlock(tx3));
+console.log('is tx1 exists on block: ', razCoin.getLatestBlock().hasTransactionInBlock(tx1));
+
 // Mine block
 razCoin.minePendingTransactions(myWalletAddress);
+console.log('is tx3 exists on block: ', razCoin.getLatestBlock().hasTransactionInBlock(tx3));
+console.log('is tx1 exists on block: ', razCoin.getLatestBlock().hasTransactionInBlock(tx1));
 
 console.log();
 console.log(`My balance is ${razCoin.getBalanceOfAddress(myWalletAddress)}`);
