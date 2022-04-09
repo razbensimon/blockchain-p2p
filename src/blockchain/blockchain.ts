@@ -9,8 +9,8 @@ class Blockchain {
 
   constructor() {
     this.chain = [this.createGenesisBlock()];
-    this.difficulty = 2;
     this.pendingTransactions = [];
+    this.difficulty = 2;
     this.miningReward = 100;
   }
 
@@ -143,7 +143,7 @@ class Blockchain {
       return false;
     }
 
-    // Check the remaining blocks on the chain to see if there hashes and
+    // Check the remaining blocks on the chain to see if their hashes and
     // signatures are correct
     for (let i = 1; i < this.chain.length; i++) {
       const currentBlock = this.chain[i];
@@ -163,6 +163,16 @@ class Blockchain {
     }
 
     return true;
+  }
+
+  hasTransactionInBlockChain(transaction: Transaction) {
+    for (let block of this.chain) {
+      if (block.hasTransactionInBlock(transaction)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 

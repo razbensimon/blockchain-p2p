@@ -91,7 +91,13 @@ class Block {
   hasTransactionInBlock(transaction: Transaction): boolean {
     // 'false' is truly false
     // 'true' may be false positive
-    return this.filter.has(transaction.calculateHash());
+    let target = transaction.calculateHash();
+    let bloomFilterResult = this.filter.has(target);
+    if (!bloomFilterResult) return false;
+
+    // bloom-filter return true. Now need to check that it's not false positive.
+    const proof = this.tree.getProof(target);
+    return this.tree.verify(proof, target, this.tree.getRoot());
   }
 }
 
