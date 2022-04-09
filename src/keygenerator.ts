@@ -1,22 +1,16 @@
-import { ec as EC } from "elliptic";
+import { ec as EC } from 'elliptic';
 
 // using 'secp256k1' elliptic curve as example
-const ec = new EC("secp256k1");
+const ec = new EC('secp256k1');
 
 // Generate a new key pair and convert them to hex-strings
 const key = ec.genKeyPair();
-const publicKey = key.getPublic("hex");
-const privateKey = key.getPrivate("hex");
+const publicKey = key.getPublic('hex');
+const privateKey = key.getPrivate('hex');
 
 // Print the keys to the console
 console.log();
-console.log(
-  "Your public key (also your wallet address, freely shareable)\n",
-  publicKey
-);
+console.log('Your public key (also your wallet address, freely shareable)\n', publicKey);
 
 console.log();
-console.log(
-  "Your private key (keep this secret! To sign transactions)\n",
-  privateKey
-);
+console.log('Your private key (keep this secret! To sign transactions)\n', privateKey);

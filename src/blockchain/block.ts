@@ -1,7 +1,7 @@
-import crypto from "crypto";
-import { Transaction } from "./transaction";
+import crypto from 'crypto';
+import { Transaction } from './transaction';
 
-const debug = require("debug")("raz:block");
+const debug = require('debug')('raz:block');
 
 class Block {
   private nonce: number;
@@ -9,11 +9,7 @@ class Block {
   private _previousHash: string = null!;
   private readonly _transactions: ReadonlyArray<Transaction> = [];
 
-  constructor(
-    private timestamp: number,
-    transactions: ReadonlyArray<Transaction>,
-    previousHash: string = ""
-  ) {
+  constructor(private timestamp: number, transactions: ReadonlyArray<Transaction>, previousHash: string = '') {
     this._transactions = transactions;
     this.previousHash = previousHash;
     this.nonce = 0;
@@ -46,14 +42,9 @@ class Block {
    */
   calculateHash(): string {
     return crypto
-      .createHash("sha256")
-      .update(
-        this._previousHash +
-          this.timestamp +
-          JSON.stringify(this._transactions) +
-          this.nonce
-      )
-      .digest("hex");
+      .createHash('sha256')
+      .update(this._previousHash + this.timestamp + JSON.stringify(this._transactions) + this.nonce)
+      .digest('hex');
   }
 
   /**
@@ -61,9 +52,7 @@ class Block {
    * of the block starts with enough zeros (= difficulty)
    */
   mineBlock(difficulty: number): void {
-    while (
-      this._hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")
-    ) {
+    while (this._hash.substring(0, difficulty) !== Array(difficulty + 1).join('0')) {
       this.nonce++;
       this._hash = this.calculateHash();
     }

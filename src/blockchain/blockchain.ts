@@ -1,7 +1,7 @@
-import { Transaction } from "./transaction";
-import { Block } from "./block";
+import { Transaction } from './transaction';
+import { Block } from './block';
 
-const debug = require("debug")("raz:blockchain");
+const debug = require('debug')('raz:blockchain');
 
 class Blockchain {
   private pendingTransactions: Transaction[];
@@ -17,7 +17,7 @@ class Blockchain {
   }
 
   createGenesisBlock(): Block {
-    return new Block(Date.parse("2022-01-01"), [], "0");
+    return new Block(Date.parse('2022-01-01'), [], '0');
   }
 
   /**
@@ -36,21 +36,13 @@ class Blockchain {
    * @param {string} miningRewardAddress
    */
   minePendingTransactions(miningRewardAddress: string) {
-    const rewardTx = new Transaction(
-      null,
-      miningRewardAddress,
-      this.miningReward
-    );
+    const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
     this.pendingTransactions.push(rewardTx);
 
-    const block = new Block(
-      Date.now(),
-      this.pendingTransactions,
-      this.getLatestBlock().hash
-    );
+    const block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
     block.mineBlock(this.difficulty);
 
-    debug("Block successfully mined!");
+    debug('Block successfully mined!');
     this.chain.push(block);
 
     this.pendingTransactions = [];
@@ -63,47 +55,41 @@ class Blockchain {
    */
   addTransaction(transaction: Transaction) {
     if (!transaction.fromAddress || !transaction.toAddress) {
-      throw new Error("Transaction must include from and to address");
+      throw new Error('Transaction must include from and to address');
     }
 
     // Verify the transaction
     if (!transaction.isValid()) {
-      throw new Error("Cannot add invalid transaction to chain");
+      throw new Error('Cannot add invalid transaction to chain');
     }
 
     if (transaction.amount <= 0) {
-      throw new Error("Transaction amount should be higher than 0");
+      throw new Error('Transaction amount should be higher than 0');
     }
 
     // Making sure that the amount sent is not greater than existing balance
     const walletBalance = this.getBalanceOfAddress(transaction.fromAddress);
     if (walletBalance < transaction.amount) {
-      throw new Error("Not enough balance");
+      throw new Error('Not enough balance');
     }
 
     // Get all other pending transactions for the "from" wallet
-    const pendingTxForWallet = this.pendingTransactions.filter(
-      (tx) => tx.fromAddress === transaction.fromAddress
-    );
+    const pendingTxForWallet = this.pendingTransactions.filter(tx => tx.fromAddress === transaction.fromAddress);
 
     // If the wallet has more pending transactions, calculate the total amount
     // of spend coins so far. If this exceeds the balance, we refuse to add this
     // transaction.
     if (pendingTxForWallet.length > 0) {
-      const totalPendingAmount = pendingTxForWallet
-        .map((tx) => tx.amount)
-        .reduce((prev, curr) => prev + curr);
+      const totalPendingAmount = pendingTxForWallet.map(tx => tx.amount).reduce((prev, curr) => prev + curr);
 
       const totalAmount = totalPendingAmount + transaction.amount;
       if (totalAmount > walletBalance) {
-        throw new Error(
-          "Pending transactions for this wallet is higher than its balance."
-        );
+        throw new Error('Pending transactions for this wallet is higher than its balance.');
       }
     }
 
     this.pendingTransactions.push(transaction);
-    debug("transaction added: %s", transaction);
+    debug('transaction added: %s', transaction);
   }
 
   /**
@@ -124,7 +110,7 @@ class Blockchain {
       }
     }
 
-    debug("getBalanceOfAdrees: %s", balance);
+    debug('getBalanceOfAddress: %s', balance);
     return balance;
   }
 
@@ -143,7 +129,7 @@ class Blockchain {
       }
     }
 
-    debug("get transactions for wallet count: %s", txs.length);
+    debug('get transactions for wallet count: %s', txs.length);
     return txs;
   }
 

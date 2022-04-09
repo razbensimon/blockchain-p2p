@@ -1,17 +1,13 @@
-import crypto from "crypto";
-import { ec as EC } from "elliptic";
+import crypto from 'crypto';
+import { ec as EC } from 'elliptic';
 
-const ec = new EC("secp256k1");
+const ec = new EC('secp256k1');
 
 class Transaction {
   private timestamp: number;
   private signature: string | null = null;
 
-  constructor(
-    public fromAddress: string | null,
-    public toAddress: string,
-    public amount: number
-  ) {
+  constructor(public fromAddress: string | null, public toAddress: string, public amount: number) {
     this.timestamp = Date.now();
   }
 
@@ -20,9 +16,9 @@ class Transaction {
    */
   calculateHash(): string {
     return crypto
-      .createHash("sha256")
+      .createHash('sha256')
       .update(this.fromAddress + this.toAddress + this.amount + this.timestamp)
-      .digest("hex");
+      .digest('hex');
   }
 
   /**
@@ -33,16 +29,16 @@ class Transaction {
   signTransaction(signingKey: EC.KeyPair) {
     // You can only send a transaction from the wallet that is linked to your
     // key. So here we check if the fromAddress matches your publicKey
-    if (signingKey.getPublic("hex") !== this.fromAddress) {
-      throw new Error("You cannot sign transactions for other wallets!");
+    if (signingKey.getPublic('hex') !== this.fromAddress) {
+      throw new Error('You cannot sign transactions for other wallets!');
     }
 
     // Calculate the hash of this transaction, sign it with the key
     // and store it inside the transaction obect
     const hashTx = this.calculateHash();
-    const sig = signingKey.sign(hashTx, "base64");
+    const sig = signingKey.sign(hashTx, 'base64');
 
-    this.signature = sig.toDER("hex");
+    this.signature = sig.toDER('hex');
   }
 
   /**
@@ -56,10 +52,10 @@ class Transaction {
     if (this.fromAddress === null) return true;
 
     if (!this.signature || this.signature.length === 0) {
-      throw new Error("No signature in this transaction");
+      throw new Error('No signature in this transaction');
     }
 
-    const publicKey = ec.keyFromPublic(this.fromAddress, "hex");
+    const publicKey = ec.keyFromPublic(this.fromAddress, 'hex');
     return publicKey.verify(this.calculateHash(), this.signature);
   }
 }
