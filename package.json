@@ -2,31 +2,18 @@
   "name": "blockchain-p2p",
   "version": "1.0.0",
   "description": "p2p blockchain example with bloom-filter and merkle-tree",
-  "main": "index.js",
+  "main": "src/main.ts",
   "scripts": {
     "start": "node -r ts-node/register src/main.ts",
+    "generate-key": "node -r ts-node/register src/keygenerator.ts",
     "prepare": "husky install"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/razbensimon/blockchain-p2p.git"
+  "dependencies": {
+    "elliptic": "^6.5.4"
   },
-  "keywords": [
-    "blockchain",
-    "p2p",
-    "merkle",
-    "tree",
-    "bloom",
-    "filter"
-  ],
-  "author": "Raz Ben Simon",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/razbensimon/blockchain-p2p/issues"
-  },
-  "homepage": "https://github.com/razbensimon/blockchain-p2p#readme",
   "devDependencies": {
     "@tsconfig/node14": "^1.0.1",
+    "@types/elliptic": "^6.4.14",
     "@types/node": "^17.0.23",
     "husky": "^7.0.4",
     "lint-staged": "^12.3.7",
@@ -37,5 +24,23 @@
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
-  }
+  },
+  "author": "Raz Ben Simon",
+  "license": "ISC",
+  "homepage": "https://github.com/razbensimon/blockchain-p2p#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/razbensimon/blockchain-p2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/razbensimon/blockchain-p2p/issues"
+  },
+  "keywords": [
+    "blockchain",
+    "p2p",
+    "merkle",
+    "tree",
+    "bloom",
+    "filter"
+  ]
 }
