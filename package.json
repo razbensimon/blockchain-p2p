@@ -9,10 +9,14 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "elliptic": "^6.5.4"
+    "bloom-filters": "^3.0.0",
+    "crypto-js": "^4.1.1",
+    "elliptic": "^6.5.4",
+    "merkletreejs": "^0.2.31"
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.1",
+    "@types/crypto-js": "^4.1.1",
     "@types/elliptic": "^6.4.14",
     "@types/node": "^17.0.23",
     "husky": "^7.0.4",
