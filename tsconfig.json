@@ -1,4 +1,10 @@
 {
   "extends": "@tsconfig/node14/tsconfig.json",
-  "exclude": ["node_modules"]
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

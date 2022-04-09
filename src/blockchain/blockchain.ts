@@ -1,5 +1,10 @@
+import keyBy from 'lodash/keyBy';
 import { Transaction } from './transaction';
 import { Block } from './block';
+import { Wallet } from './wallet';
+import { ec as EC } from 'elliptic';
+
+const ec = new EC('secp256k1');
 
 class Blockchain {
   private pendingTransactions: Transaction[];
@@ -7,7 +12,7 @@ class Blockchain {
   private readonly difficulty: number;
   private readonly miningReward: number;
 
-  constructor() {
+  constructor(private readonly miningRewardAddress: string) {
     this.chain = [this.createGenesisBlock()];
     this.pendingTransactions = [];
     this.difficulty = 2;
@@ -29,12 +34,10 @@ class Blockchain {
   /**
    * Takes all the pending transactions, puts them in a Block and starts the
    * mining process. It also adds a transaction to send the mining reward to
-   * the given address.
-   *
-   * @param {string} miningRewardAddress
+   * the miner address.
    */
-  minePendingTransactions(miningRewardAddress: string) {
-    const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
+  minePendingTransactions() {
+    const rewardTx = new Transaction(null, this.miningRewardAddress, this.miningReward);
     this.pendingTransactions.push(rewardTx);
 
     const block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
@@ -173,6 +176,32 @@ class Blockchain {
     }
 
     return false;
+  }
+
+  loadTransactionsIntoBlocks(transactionPool: Transaction[], wallets: Wallet[]) {
+    const walletsAsDictionary = keyBy(wallets, wallet => wallet.publicKey);
+    let counter = 0;
+    for (const jsonTransaction of transactionPool) {
+      if (!jsonTransaction.fromAddress || jsonTransaction.amount <= 0) {
+        throw new Error('loaded transaction is invalid');
+      }
+
+      const newTransaction = new Transaction(
+        jsonTransaction.fromAddress,
+        jsonTransaction.toAddress,
+        jsonTransaction.amount
+      );
+
+      const keyPair = ec.keyFromPrivate(walletsAsDictionary[jsonTransaction.fromAddress].privateKey);
+      newTransaction.signTransaction(keyPair);
+      this.addTransaction(newTransaction);
+      counter += 1;
+
+      if (counter % 4 === 0) {
+        this.minePendingTransactions();
+      }
+      // TODO ?
+    }
   }
 }
 

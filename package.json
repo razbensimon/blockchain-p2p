@@ -5,19 +5,21 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "node -r ts-node/register src/main.ts",
-    "generate-key": "node -r ts-node/register src/keygenerator.ts",
+    "generate-key": "node -r ts-node/register src/keys/keygenerator.ts",
     "prepare": "husky install"
   },
   "dependencies": {
     "bloom-filters": "^3.0.0",
     "crypto-js": "^4.1.1",
     "elliptic": "^6.5.4",
+    "lodash": "^4.17.21",
     "merkletreejs": "^0.2.31"
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.1",
     "@types/crypto-js": "^4.1.1",
     "@types/elliptic": "^6.4.14",
+    "@types/lodash": "^4.14.181",
     "@types/node": "^17.0.23",
     "husky": "^7.0.4",
     "lint-staged": "^12.3.7",
