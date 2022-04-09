@@ -1,8 +1,6 @@
 import { Transaction } from './transaction';
 import { Block } from './block';
 
-const debug = require('debug')('raz:blockchain');
-
 class Blockchain {
   private pendingTransactions: Transaction[];
   private readonly chain: Block[];
@@ -42,7 +40,7 @@ class Blockchain {
     const block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
     block.mineBlock(this.difficulty);
 
-    debug('Block successfully mined!');
+    console.log('Block successfully mined!');
     this.chain.push(block);
 
     this.pendingTransactions = [];
@@ -89,7 +87,7 @@ class Blockchain {
     }
 
     this.pendingTransactions.push(transaction);
-    debug('transaction added: %s', transaction);
+    console.log('transaction added: %s', transaction);
   }
 
   /**
@@ -110,7 +108,6 @@ class Blockchain {
       }
     }
 
-    debug('getBalanceOfAddress: %s', balance);
     return balance;
   }
 
@@ -129,7 +126,7 @@ class Blockchain {
       }
     }
 
-    debug('get transactions for wallet count: %s', txs.length);
+    console.log('get transactions for wallet count: %s', txs.length);
     return txs;
   }
 

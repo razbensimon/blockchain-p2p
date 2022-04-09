@@ -2,18 +2,22 @@ import { MerkleTree } from 'merkletreejs';
 import SHA256 from 'crypto-js/sha256';
 import { Transaction } from './transaction';
 
-const debug = require('debug')('raz:block');
-
 class Block {
   private nonce: number;
   private _previousHash: string = null!;
   private _hash: string = null!;
+  private tree: MerkleTree;
   private readonly _transactions: ReadonlyArray<Transaction> = [];
 
   constructor(private timestamp: number, transactions: ReadonlyArray<Transaction>, previousHash: string = '') {
     this._transactions = transactions;
     this.previousHash = previousHash;
     this.nonce = 0;
+
+    // Merkle Tree:
+    const leaves = transactions.map(transaction => transaction.calculateHash());
+    this.tree = new MerkleTree(leaves, SHA256);
+
     this.hash = this.calculateHash();
   }
 
@@ -42,7 +46,10 @@ class Block {
    * inside this block)
    */
   calculateHash(): string {
-    return SHA256(this._previousHash + this.timestamp + JSON.stringify(this._transactions) + this.nonce).toString();
+    const rootHash = this.tree.getRoot().toString('hex');
+    return SHA256(
+      this._previousHash + this.timestamp + JSON.stringify(this._transactions) + this.nonce + rootHash
+    ).toString();
   }
 
   /**
@@ -50,12 +57,12 @@ class Block {
    * of the block starts with enough zeros (= difficulty)
    */
   mineBlock(difficulty: number): void {
-    while (this._hash.substring(0, difficulty) !== Array(difficulty + 1).join('0')) {
+    while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join('0')) {
       this.nonce++;
-      this._hash = this.calculateHash();
+      this.hash = this.calculateHash();
     }
 
-    debug(`Block mined: ${this._hash}`);
+    console.log(`Block mined: ${this.hash}`);
   }
 
   /**

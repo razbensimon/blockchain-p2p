@@ -12,13 +12,14 @@ const myWalletAddress = myKey.getPublic('hex');
 // Create new instance of Blockchain class
 const razCoin = new Blockchain();
 
-// Mine first block
+// Mine Genesis block
 razCoin.minePendingTransactions(myWalletAddress);
 
 // Create a transaction & sign it with your key
 const tx1 = new Transaction(myWalletAddress, 'address2', 100);
 tx1.signTransaction(myKey);
 razCoin.addTransaction(tx1);
+console.log('tx1 hash', tx1.calculateHash());
 
 // Mine block
 razCoin.minePendingTransactions(myWalletAddress);
@@ -27,12 +28,20 @@ razCoin.minePendingTransactions(myWalletAddress);
 const tx2 = new Transaction(myWalletAddress, 'address1', 50);
 tx2.signTransaction(myKey);
 razCoin.addTransaction(tx2);
+console.log('tx2 hash', tx2.calculateHash());
+
+// Create 3rd transaction
+const tx3 = new Transaction(myWalletAddress, 'address1', 10);
+tx3.signTransaction(myKey);
+razCoin.addTransaction(tx3);
+console.log('tx3 hash', tx3.calculateHash());
 
 // Mine block
 razCoin.minePendingTransactions(myWalletAddress);
 
 console.log();
-console.log(`Balance is ${razCoin.getBalanceOfAddress(myWalletAddress)}`);
+console.log(`My balance is ${razCoin.getBalanceOfAddress(myWalletAddress)}`);
+console.log(`'address1' balance is ${razCoin.getBalanceOfAddress('address1')}`);
 
 // Uncomment this line if you want to test tampering with the chain
 //(razCoin as any).chain[1].transactions[0].amount = 10;
