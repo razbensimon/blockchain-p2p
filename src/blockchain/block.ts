@@ -1,12 +1,13 @@
-import crypto from 'crypto';
+import { MerkleTree } from 'merkletreejs';
+import SHA256 from 'crypto-js/sha256';
 import { Transaction } from './transaction';
 
 const debug = require('debug')('raz:block');
 
 class Block {
   private nonce: number;
-  private _hash: string = null!;
   private _previousHash: string = null!;
+  private _hash: string = null!;
   private readonly _transactions: ReadonlyArray<Transaction> = [];
 
   constructor(private timestamp: number, transactions: ReadonlyArray<Transaction>, previousHash: string = '') {
@@ -41,10 +42,7 @@ class Block {
    * inside this block)
    */
   calculateHash(): string {
-    return crypto
-      .createHash('sha256')
-      .update(this._previousHash + this.timestamp + JSON.stringify(this._transactions) + this.nonce)
-      .digest('hex');
+    return SHA256(this._previousHash + this.timestamp + JSON.stringify(this._transactions) + this.nonce).toString();
   }
 
   /**

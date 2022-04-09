@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import SHA256 from 'crypto-js/sha256';
 import { ec as EC } from 'elliptic';
 
 const ec = new EC('secp256k1');
@@ -15,10 +15,7 @@ class Transaction {
    * Creates a SHA256 hash of the transaction
    */
   calculateHash(): string {
-    return crypto
-      .createHash('sha256')
-      .update(this.fromAddress + this.toAddress + this.amount + this.timestamp)
-      .digest('hex');
+    return SHA256(this.fromAddress + this.toAddress + this.amount + this.timestamp).toString();
   }
 
   /**
