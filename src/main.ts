@@ -86,6 +86,8 @@ async function main() {
   // Check if the chain is valid
   console.log();
   console.log('Blockchain valid?', razCoin.isChainValid() ? 'Yes!' : 'No :(');
+  console.log('Count of coins in blockchain:', razCoin.printSumOfCoinsInBlockchain());
+  console.log('Sum of coins mined by all blocks in blockchain:', razCoin.printSumOfCoinsMinedOnAllBlocks());
 }
 
 main().catch(console.error);

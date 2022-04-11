@@ -160,7 +160,7 @@ class Blockchain {
       }
     }
 
-    console.log('get transactions for wallet count: %s', txs.length);
+    //console.log('get transactions for wallet count: %s', txs.length);
     return txs;
   }
 
@@ -239,6 +239,38 @@ class Blockchain {
     }
     await this.mineUntilNoPendingTransactions();
     console.log('Mined initial giveaway block\n');
+  }
+
+  printSumOfCoinsInBlockchain(): number {
+    const addressToBalance: { [address: string]: number } = {};
+    for (const block of this.chain) {
+      for (const trans of block.transactions) {
+        if (trans.fromAddress) {
+          if (!addressToBalance[trans.fromAddress]) {
+            addressToBalance[trans.fromAddress] = 0;
+          }
+          addressToBalance[trans.fromAddress] -= trans.amount;
+        }
+
+        if (trans.toAddress) {
+          if (!addressToBalance[trans.toAddress]) {
+            addressToBalance[trans.toAddress] = 0;
+          }
+          addressToBalance[trans.toAddress] += trans.amount;
+        }
+      }
+    }
+    return Object.values(addressToBalance).reduce((a, b) => a + b, 0);
+  }
+
+  printSumOfCoinsMinedOnAllBlocks(): number {
+    let coinsMined = 0;
+    for (const block of this.chain) {
+      for (const trans of block.transactions) {
+        coinsMined += trans.amount;
+      }
+    }
+    return coinsMined;
   }
 }
 
