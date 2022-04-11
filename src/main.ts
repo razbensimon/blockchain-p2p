@@ -1,7 +1,7 @@
 import { Transaction, Blockchain } from './blockchain';
 import { ec as EC } from 'elliptic';
 import INITIAL_TRANSACTIONS from '../data/initial_transactions_data.json';
-import { clientsWallets, fullNodeWallet, Wallet } from './wallets/wallet';
+import { client1Wallet, client2Wallet, clientsWallets, fullNodeWallet } from './wallets/wallet';
 
 const ec = new EC('secp256k1');
 
@@ -29,6 +29,7 @@ async function main() {
   await razCoin.giveInitialBalanceToClients(clientsWallets.map(c => c.publicKey));
 
   // Initial load transactions from file
+  console.log('Initial load transactions from file:');
   await razCoin.loadTransactionsIntoBlocks(INITIAL_TRANSACTIONS as Transaction[], clientsWallets);
   console.log('Loaded transactions from json file\n');
 
@@ -74,7 +75,9 @@ async function main() {
   console.table([
     { name: 'Full Node (My)', Balance: razCoin.getBalanceOfAddress(fullNodeAddress) },
     { name: 'address1', Balance: razCoin.getBalanceOfAddress('address2') },
-    { name: 'address2', Balance: razCoin.getBalanceOfAddress('address1') }
+    { name: 'address2', Balance: razCoin.getBalanceOfAddress('address1') },
+    { name: client1Wallet.publicKey.substring(0, 7), Balance: razCoin.getBalanceOfAddress(client1Wallet.publicKey) },
+    { name: client2Wallet.publicKey.substring(0, 7), Balance: razCoin.getBalanceOfAddress(client2Wallet.publicKey) }
   ]);
 
   // Uncomment this line if you want to test tampering with the chain

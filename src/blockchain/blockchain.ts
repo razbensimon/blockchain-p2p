@@ -50,7 +50,7 @@ class Blockchain {
 
     // add reward transaction!
     const rewardTx = new Transaction(null, this.miningRewardAddress, this.miningReward);
-    const transactionsInBlock = [...pendingTransactionsOnNextBlock, rewardTx];
+    const transactionsInBlock: Transaction[] = [...pendingTransactionsOnNextBlock, rewardTx];
 
     // Create and mine the block:
     const block = new Block(Date.now(), transactionsInBlock, this.getLatestBlock().hash);
