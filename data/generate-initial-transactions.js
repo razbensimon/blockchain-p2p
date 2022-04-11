@@ -19,7 +19,7 @@ for (let i = 0; i < TRANSACTIONS_NUMBER; i++) {
   transactions.push({
     fromAddress: randomBoolean ? WALLET_1 : WALLET_2,
     toAddress: randomBoolean ? WALLET_2 : WALLET_1,
-    amount: randomInteger(1, 1000)
+    amount: randomInteger(1, 10)
   });
 }
 

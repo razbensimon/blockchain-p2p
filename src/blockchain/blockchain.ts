@@ -1,7 +1,7 @@
 import keyBy from 'lodash/keyBy';
 import { Transaction } from './transaction';
 import { Block } from './block';
-import { Wallet } from './wallet';
+import { Wallet } from '../wallets/wallet';
 import { ec as EC } from 'elliptic';
 
 const ec = new EC('secp256k1');
@@ -16,7 +16,7 @@ class Blockchain {
     this.chain = [this.createGenesisBlock()];
     this.pendingTransactions = [];
     this.difficulty = 2;
-    this.miningReward = 100;
+    this.miningReward = 20;
   }
 
   createGenesisBlock(): Block {
@@ -43,7 +43,7 @@ class Blockchain {
     const block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
     block.mineBlock(this.difficulty);
 
-    //console.log('Block successfully mined!');
+    console.log(`Block mined: ${block.hash}`);
     this.chain.push(block);
     this.pendingTransactions = [];
   }
@@ -202,6 +202,17 @@ class Blockchain {
       }
       // TODO ?
     }
+  }
+
+  giveInitialBalanceToClients(wallets: string[]): void {
+    const initialBalance = 100;
+    for (const wallet of wallets) {
+      const transaction = new Transaction(null, wallet, initialBalance);
+      this.pendingTransactions.push(transaction);
+      console.log(`gave ${initialBalance} initial coins to ${wallet.substring(0, 7)}`);
+    }
+    this.minePendingTransactions();
+    console.log('Mined initial giveaway block\n');
   }
 }
 
