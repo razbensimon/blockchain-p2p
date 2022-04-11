@@ -3,18 +3,21 @@ import { Transaction } from './transaction';
 import { Block } from './block';
 import { Wallet } from '../wallets/wallet';
 import { ec as EC } from 'elliptic';
+import { TransactionsQueue } from './transactionsQueue';
 
 const ec = new EC('secp256k1');
 
+const MAX_TRX_IN_BLOCK = 4;
+
 class Blockchain {
-  private pendingTransactions: Transaction[];
+  private pendingTransactions: TransactionsQueue;
   private readonly chain: Block[];
   private readonly difficulty: number;
   private readonly miningReward: number;
 
   constructor(private readonly miningRewardAddress: string) {
     this.chain = [this.createGenesisBlock()];
-    this.pendingTransactions = [];
+    this.pendingTransactions = new TransactionsQueue(MAX_TRX_IN_BLOCK);
     this.difficulty = 2;
     this.miningReward = 20;
   }
@@ -32,20 +35,40 @@ class Blockchain {
   }
 
   /**
-   * Takes all the pending transactions, puts them in a Block and starts the
+   * Takes X pending transactions, puts them in a Block and starts the
    * mining process. It also adds a transaction to send the mining reward to
    * the miner address.
+   * Returns boolean if done with all pending transactions or not.
    */
-  minePendingTransactions() {
+  minePendingTransactions(): boolean {
+    const pendingTransactionsOnNextBlock = this.pendingTransactions.getPendingTransactionsOnNextBlock();
+    if (pendingTransactionsOnNextBlock?.length === 0) {
+      // no transaction to mine, exiting...
+      return this.pendingTransactions.countPendingTransactions() === 0;
+    }
+
     const rewardTx = new Transaction(null, this.miningRewardAddress, this.miningReward);
-    this.pendingTransactions.push(rewardTx);
+    const transactionsInBlock = [...pendingTransactionsOnNextBlock, rewardTx]; // add reward transaction!
 
-    const block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
+    const block = new Block(Date.now(), transactionsInBlock, this.getLatestBlock().hash);
     block.mineBlock(this.difficulty);
+    this.pendingTransactions.blockHaveBeenMined();
 
-    console.log(`Block mined: ${block.hash}`);
+    const transactionsNumberLeft = this.pendingTransactions.countPendingTransactions();
+    console.log(`Block mined: ${block.hash}, pending transactions left:`, transactionsNumberLeft);
     this.chain.push(block);
-    this.pendingTransactions = [];
+
+    return transactionsNumberLeft === 0; // has done mining all
+  }
+
+  mineUntilNoPendingTransactions(): void {
+    const amount = this.pendingTransactions.countPendingTransactions();
+    if (amount === 0) {
+      console.log('no transactions to mine...');
+      return;
+    }
+    while (!this.minePendingTransactions()) {}
+    console.log(`Mined all pending ${amount} transactions`);
   }
 
   /**
@@ -74,7 +97,9 @@ class Blockchain {
     }
 
     // Get all other pending transactions for the "from" wallet
-    const pendingTxForWallet = this.pendingTransactions.filter(tx => tx.fromAddress === transaction.fromAddress);
+    const pendingTxForWallet = this.pendingTransactions
+      .getPendingTransactionsOnLastBlock()
+      .filter(tx => tx.fromAddress === transaction.fromAddress);
 
     // If the wallet has more pending transactions, calculate the total amount
     // of spend coins so far. If this exceeds the balance, we refuse to add this
@@ -88,7 +113,8 @@ class Blockchain {
       }
     }
 
-    this.pendingTransactions.push(transaction);
+    // decide if this transaction going to be included in next block or not
+    this.pendingTransactions.addTransaction(transaction);
     //console.log('transaction added: %s', transaction);
   }
 
@@ -180,7 +206,6 @@ class Blockchain {
 
   loadTransactionsIntoBlocks(transactionPool: Transaction[], wallets: Wallet[]) {
     const walletsAsDictionary = keyBy(wallets, wallet => wallet.publicKey);
-    let counter = 0;
     for (const jsonTransaction of transactionPool) {
       if (!jsonTransaction.fromAddress || jsonTransaction.amount <= 0) {
         throw new Error('loaded transaction is invalid');
@@ -195,23 +220,18 @@ class Blockchain {
       const keyPair = ec.keyFromPrivate(walletsAsDictionary[jsonTransaction.fromAddress].privateKey);
       newTransaction.signTransaction(keyPair);
       this.addTransaction(newTransaction);
-      counter += 1;
-
-      if (counter % 4 === 0) {
-        this.minePendingTransactions();
-      }
-      // TODO ?
     }
+    this.mineUntilNoPendingTransactions();
   }
 
   giveInitialBalanceToClients(wallets: string[]): void {
     const initialBalance = 100;
     for (const wallet of wallets) {
       const transaction = new Transaction(null, wallet, initialBalance);
-      this.pendingTransactions.push(transaction);
+      this.pendingTransactions.addTransaction(transaction);
       console.log(`gave ${initialBalance} initial coins to ${wallet.substring(0, 7)}`);
     }
-    this.minePendingTransactions();
+    this.mineUntilNoPendingTransactions();
     console.log('Mined initial giveaway block\n');
   }
 }
