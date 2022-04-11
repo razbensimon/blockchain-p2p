@@ -74,8 +74,8 @@ async function main() {
   console.log();
   console.table([
     { name: 'Full Node (My)', Balance: razCoin.getBalanceOfAddress(fullNodeAddress) },
-    { name: 'address1', Balance: razCoin.getBalanceOfAddress('address2') },
-    { name: 'address2', Balance: razCoin.getBalanceOfAddress('address1') },
+    { name: 'address1', Balance: razCoin.getBalanceOfAddress('address1') },
+    { name: 'address2', Balance: razCoin.getBalanceOfAddress('address2') },
     { name: client1Wallet.publicKey.substring(0, 7), Balance: razCoin.getBalanceOfAddress(client1Wallet.publicKey) },
     { name: client2Wallet.publicKey.substring(0, 7), Balance: razCoin.getBalanceOfAddress(client2Wallet.publicKey) }
   ]);
