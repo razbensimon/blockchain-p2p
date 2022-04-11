@@ -42,32 +42,38 @@ class Blockchain {
    */
   minePendingTransactions(): boolean {
     const pendingTransactionsOnNextBlock = this.pendingTransactions.getPendingTransactionsOnNextBlock();
+
     if (pendingTransactionsOnNextBlock?.length === 0) {
       // no transaction to mine, exiting...
       return this.pendingTransactions.countPendingTransactions() === 0;
     }
 
+    // add reward transaction!
     const rewardTx = new Transaction(null, this.miningRewardAddress, this.miningReward);
-    const transactionsInBlock = [...pendingTransactionsOnNextBlock, rewardTx]; // add reward transaction!
+    const transactionsInBlock = [...pendingTransactionsOnNextBlock, rewardTx];
 
+    // Create and mine the block:
     const block = new Block(Date.now(), transactionsInBlock, this.getLatestBlock().hash);
     block.mineBlock(this.difficulty);
     this.pendingTransactions.blockHaveBeenMined();
+    this.chain.push(block);
 
     const transactionsNumberLeft = this.pendingTransactions.countPendingTransactions();
     console.log(`Block mined: ${block.hash}, pending transactions left:`, transactionsNumberLeft);
-    this.chain.push(block);
 
-    return transactionsNumberLeft === 0; // has done mining all
+    const isDoneMiningAll = transactionsNumberLeft === 0;
+    return isDoneMiningAll;
   }
 
-  mineUntilNoPendingTransactions(): void {
+  async mineUntilNoPendingTransactions(waitTime?: number): Promise<void> {
     const amount = this.pendingTransactions.countPendingTransactions();
     if (amount === 0) {
       console.log('no transactions to mine...');
       return;
     }
-    while (!this.minePendingTransactions()) {}
+    while (!this.minePendingTransactions()) {
+      waitTime && (await delay(waitTime));
+    }
     console.log(`Mined all pending ${amount} transactions`);
   }
 
@@ -204,7 +210,7 @@ class Blockchain {
     return false;
   }
 
-  loadTransactionsIntoBlocks(transactionPool: Transaction[], wallets: Wallet[]) {
+  async loadTransactionsIntoBlocks(transactionPool: Transaction[], wallets: Wallet[]) {
     const walletsAsDictionary = keyBy(wallets, wallet => wallet.publicKey);
     for (const jsonTransaction of transactionPool) {
       if (!jsonTransaction.fromAddress || jsonTransaction.amount <= 0) {
@@ -221,19 +227,25 @@ class Blockchain {
       newTransaction.signTransaction(keyPair);
       this.addTransaction(newTransaction);
     }
-    this.mineUntilNoPendingTransactions();
+    await this.mineUntilNoPendingTransactions();
   }
 
-  giveInitialBalanceToClients(wallets: string[]): void {
+  async giveInitialBalanceToClients(wallets: string[]) {
     const initialBalance = 100;
     for (const wallet of wallets) {
       const transaction = new Transaction(null, wallet, initialBalance);
       this.pendingTransactions.addTransaction(transaction);
       console.log(`gave ${initialBalance} initial coins to ${wallet.substring(0, 7)}`);
     }
-    this.mineUntilNoPendingTransactions();
+    await this.mineUntilNoPendingTransactions();
     console.log('Mined initial giveaway block\n');
   }
+}
+
+function delay(waitTimeInMs: number) {
+  return new Promise(resolve => {
+    setTimeout(resolve, waitTimeInMs);
+  });
 }
 
 export { Blockchain };
