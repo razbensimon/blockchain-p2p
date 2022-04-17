@@ -1,6 +1,6 @@
 const { argv } = process;
 
-//extract ports from process arguments, {me: first_port, peers: rest... }
+// extract ports from process arguments
 export function extractPeersAndMyPort() {
   return {
     me: argv[2],

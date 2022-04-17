@@ -15,7 +15,7 @@ export class TransactionsQueue {
   }
 
   /**
-   add transaction to next block.
+   Add transaction to next block.
    if there is no room, it wil create new pending block
    */
   addTransaction(transaction: Transaction): void {

@@ -1,9 +1,10 @@
+import { delay } from '../utils';
 import keyBy from 'lodash/keyBy';
-import { Transaction } from './transaction';
-import { Block } from './block';
 import { Wallet } from '../wallets/wallet';
-import { ec as EC } from 'elliptic';
+import { Block } from './block';
+import { Transaction } from './transaction';
 import { TransactionsQueue } from './transactionsQueue';
+import { ec as EC } from 'elliptic';
 
 const ec = new EC('secp256k1');
 
@@ -272,12 +273,6 @@ class Blockchain {
     }
     return coinsMined;
   }
-}
-
-function delay(waitTimeInMs: number) {
-  return new Promise(resolve => {
-    setTimeout(resolve, waitTimeInMs);
-  });
 }
 
 export { Blockchain };

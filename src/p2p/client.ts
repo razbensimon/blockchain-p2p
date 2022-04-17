@@ -1,3 +1,4 @@
+import { delay } from '../utils';
 import { Socket } from 'net';
 import {
   extractMessage,
@@ -48,12 +49,7 @@ peer.on('connection', (socket: Socket, peerIp: string) => {
     }
 
     if (message.type === 'transactionAdded' && message.from === myPort) {
-      console.log('transaction added confirm');
-      return;
-    }
-
-    if (message?.type === 'transactionAdded' && message?.to === myPort) {
-      console.log('you got', message.amount, 'coins from', message.from);
+      console.log('Transaction added successfully!');
       return;
     }
   });
@@ -68,12 +64,17 @@ peer.on('connection', (socket: Socket, peerIp: string) => {
   });
 
   if (peerPort === '4000') {
-    // Connected to full-node server, can ask questions now:
+    // Connected to full-node server, can askQuestion questions now:
     askMenuLoop();
   }
 });
 
-async function ask(): Promise<boolean> {
+/**
+ Start asking questions in the command line.
+ Manages the  flow of questions, validate answers.
+ Returns boolean, indicates if we should start asking all over again.
+ */
+async function askQuestion(): Promise<boolean> {
   prompt.start();
 
   try {
@@ -130,10 +131,10 @@ async function ask(): Promise<boolean> {
 }
 
 function askMenuLoop(): Promise<void> {
-  // start CLI menu
-  return ask()
+  // start quesions menu:
+  return askQuestion()
     .then(async (shouldContinue: boolean) => {
-      await delay(1000);
+      await delay(1000); // give the server a chance to answer
       if (shouldContinue) {
         console.log();
         return askMenuLoop(); // again
@@ -153,9 +154,3 @@ process.on('SIGINT', () => {
   console.log('\nSIGINT exiting...');
   process.exit();
 });
-
-function delay(waitTimeInMs: number) {
-  return new Promise(resolve => {
-    setTimeout(resolve, waitTimeInMs);
-  });
-}

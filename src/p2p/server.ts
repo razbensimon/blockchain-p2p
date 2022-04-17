@@ -1,4 +1,4 @@
-import { Socket } from 'net';
+import { runBlockchain } from '../run-common';
 import {
   extractMessage,
   extractPeersAndMyPort,
@@ -7,9 +7,9 @@ import {
   getPeerIps,
   toLocalIp
 } from './common';
-import { runBlockchain } from '../run-common';
-import { Wallet } from '../wallets/wallet';
 import config from './config';
+import { Socket } from 'net';
+import { Wallet } from '../wallets/wallet';
 import { Transaction } from '../blockchain';
 import { ec as EC } from 'elliptic';
 
