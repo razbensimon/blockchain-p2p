@@ -3,6 +3,9 @@ _____________
 
 A Blockchain project including P2P, BloomFilter and MerkleTree implementation
 
+Prerequisite:
+- Use Node.js 14 (I used 14.19.1)
+
 ### How to run P2P example:
 
 1. `npm install`
