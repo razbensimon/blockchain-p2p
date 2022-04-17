@@ -3,7 +3,7 @@ _____________
 
 A Blockchain project including P2P, BloomFilter and MerkleTree implementation
 
-###How to run P2P example:
+### How to run P2P example:
 
 1. `npm install`
 2. Open **3 terminals**, type each command in different terminal:
