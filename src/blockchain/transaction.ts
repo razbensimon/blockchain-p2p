@@ -48,6 +48,10 @@ class Transaction {
     // different way (special field for instance)
     if (this.fromAddress === null) return true;
 
+    if (this.fromAddress === this.toAddress) {
+      throw new Error("Can't transfer coins to yourself!");
+    }
+
     if (!this.signature || this.signature.length === 0) {
       throw new Error('No signature in this transaction');
     }

@@ -1,37 +1,9 @@
-import { Transaction, Blockchain } from './blockchain';
-import { ec as EC } from 'elliptic';
-import INITIAL_TRANSACTIONS from '../data/initial_transactions_data.json';
-import { client1Wallet, client2Wallet, clientsWallets, fullNodeWallet } from './wallets/wallet';
-
-const ec = new EC('secp256k1');
-
-function setupNewBlockchain() {
-  // Your private key goes here
-  const keyPair = ec.keyFromPrivate(fullNodeWallet.privateKey);
-
-  // From that we can calculate your public key (which doubles as your wallet address)
-  const fullNodeAddress = keyPair.getPublic('hex');
-
-  // Create new instance of Blockchain class
-  const razCoin = new Blockchain(fullNodeAddress);
-
-  // Mine Genesis block
-  razCoin.minePendingTransactions();
-  console.log('Genesis block mined\n');
-
-  return { razCoin, fullNodeAddress, keyPair };
-}
+import { Transaction } from './blockchain';
+import { client1Wallet, client2Wallet } from './wallets/wallet';
+import { runBlockchain } from './run-common';
 
 async function main() {
-  const { razCoin, fullNodeAddress, keyPair } = setupNewBlockchain();
-
-  // fill initial balances on wallets
-  await razCoin.giveInitialBalanceToClients(clientsWallets.map(c => c.publicKey));
-
-  // Initial load transactions from file
-  console.log('Initial load transactions from file:');
-  await razCoin.loadTransactionsIntoBlocks(INITIAL_TRANSACTIONS as Transaction[], clientsWallets);
-  console.log('Loaded transactions from json file\n');
+  const { razCoin, fullNodeAddress, keyPair } = await runBlockchain();
 
   // Create a transaction & sign it with your key
   console.log('Block 1:');

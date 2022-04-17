@@ -12,8 +12,10 @@
     "bloom-filters": "^3.0.0",
     "crypto-js": "^4.1.1",
     "elliptic": "^6.5.4",
+    "fully-connected-topology": "^1.1.1",
     "lodash": "^4.17.21",
-    "merkletreejs": "^0.2.31"
+    "merkletreejs": "^0.2.31",
+    "prompt-async": "^0.9.9"
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.1",

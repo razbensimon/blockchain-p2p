@@ -119,7 +119,7 @@ class Blockchain {
       }
     }
 
-    // decide if this transaction going to be included in next block or not
+    // decide if this transaction going to be included in next block or not, inserting queue:
     this.pendingTransactions.addTransaction(transaction);
     //console.log('transaction added: %s', transaction);
   }
