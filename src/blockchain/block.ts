@@ -95,7 +95,8 @@ class Block {
     let bloomFilterResult = this.filter.has(target);
     if (!bloomFilterResult) return false;
 
-    // bloom-filter return true. Now need to check that it's not false positive.
+    // Bloom-Filter returned true.
+    // Now need to check that it is not a false positive - So we search on our MerkleTree:
     const proof = this.tree.getProof(target);
     return this.tree.verify(proof, target, this.tree.getRoot());
   }

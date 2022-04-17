@@ -5,6 +5,9 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "node -r ts-node/register src/main.ts",
+    "start-p2p-server": "node -r ts-node/register src/p2p/server.ts 4000 4001 4002",
+    "start-p2p-client1": "node -r ts-node/register src/p2p/client.ts 4001 4000 4002",
+    "start-p2p-client2": "node -r ts-node/register src/p2p/client.ts 4002 4000 4001",
     "generate-key": "node -r ts-node/register src/wallets/keygenerator.ts",
     "prepare": "husky install"
   },
