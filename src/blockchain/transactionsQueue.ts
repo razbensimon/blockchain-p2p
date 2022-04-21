@@ -8,15 +8,17 @@ export class TransactionsQueue {
   private blocks: Array<Transaction[]> = [];
 
   constructor(blockLimit: number) {
-    if (blockLimit <= 1) throw new Error('limit should be at least 2');
-    // reduce 1 to give space for reward's transaction
-    this.blockLimit = blockLimit - 1;
+    if (blockLimit <= 2) throw new Error('limit should be at least 3');
+
+    // reduce 2, to give space for reward's transaction + burn's transaction
+    this.blockLimit = blockLimit - 2;
     this.blocks.push([]);
   }
 
   /**
+   Push to tx queue.
    Add transaction to next block.
-   if there is no room, it wil create new pending block
+   if there is no room, it wil create new pending block.
    */
   addTransaction(transaction: Transaction): void {
     if (this.blocks.length === 0) {
@@ -38,21 +40,24 @@ export class TransactionsQueue {
   /**
    * After block have been mined,
    * call this function to clean the and remove those mined transactions from
-   * the pending queue.
+   * the pending queue. (similar to Pop action)
    */
   blockHaveBeenMined(): void {
     // remove first block that already mined
     this.blocks.splice(0, 1);
   }
 
+  /* head of the queue */
   getPendingTransactionsOnNextBlock(): Transaction[] {
     return first(this.blocks) ?? [];
   }
 
+  /* top of the queue */
   getPendingTransactionsOnLastBlock(): Transaction[] {
     return last(this.blocks) ?? [];
   }
 
+  /* count all pending tx in whole queue */
   countPendingTransactions(): number {
     return sum(this.blocks.map(block => block.length));
   }

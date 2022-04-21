@@ -6,7 +6,7 @@ async function main() {
   const { razCoin, fullNodeAddress, keyPair } = await runBlockchain();
 
   // Create a transaction & sign it with your key
-  console.log('Block 1:');
+  console.log('Example Block 1:');
   const tx1 = new Transaction(fullNodeAddress, 'address2', 100);
   tx1.signTransaction(keyPair);
   razCoin.addTransaction(tx1);
@@ -17,7 +17,8 @@ async function main() {
   console.log();
 
   // ---------------------------------------------------------
-  console.log('Block 2:');
+
+  console.log('Example Block 2:');
   // Create second transaction
   const tx2 = new Transaction(fullNodeAddress, 'address1', 50);
   tx2.signTransaction(keyPair);
@@ -31,6 +32,7 @@ async function main() {
   console.log('tx3 hash', tx3.calculateHash());
 
   // Use bloom filter to search if transaction exists on block:
+  console.log('\nUse bloom-filter & MerkleTree to search if transaction exists on block 🔎');
   console.log('is tx1 exists on LAST block: ', razCoin.getLatestBlock().hasTransactionInBlock(tx1), '(before mining)');
   console.log('is tx3 exists on LAST block: ', razCoin.getLatestBlock().hasTransactionInBlock(tx3), '(before mining)');
 
@@ -43,13 +45,20 @@ async function main() {
   console.log('is tx1 exists on whole block-chain: ', razCoin.hasTransactionInBlockChain(tx1));
   console.log('is tx3 exists on whole block-chain: ', razCoin.hasTransactionInBlockChain(tx3));
 
-  console.log();
+  console.log('Done mining & search example.');
+
+  console.log('\nBurn Coins Example 🔥:');
+  razCoin.burnYourCoins(fullNodeAddress, 10, keyPair);
+  razCoin.minePendingTransactions();
+  console.log('burned 10 coins');
+
+  console.log('\nPrint balance of specific wallets:');
   console.table([
     { name: 'Full Node (My)', Balance: razCoin.getBalanceOfAddress(fullNodeAddress) },
     { name: 'address1', Balance: razCoin.getBalanceOfAddress('address1') },
     { name: 'address2', Balance: razCoin.getBalanceOfAddress('address2') },
-    { name: client1Wallet.publicKey.substring(0, 7), Balance: razCoin.getBalanceOfAddress(client1Wallet.publicKey) },
-    { name: client2Wallet.publicKey.substring(0, 7), Balance: razCoin.getBalanceOfAddress(client2Wallet.publicKey) }
+    { name: client1Wallet.publicKey.substring(0, 9), Balance: razCoin.getBalanceOfAddress(client1Wallet.publicKey) },
+    { name: client2Wallet.publicKey.substring(0, 9), Balance: razCoin.getBalanceOfAddress(client2Wallet.publicKey) }
   ]);
 
   // Uncomment this line if you want to test tampering with the chain
@@ -58,8 +67,13 @@ async function main() {
   // Check if the chain is valid
   console.log();
   console.log('Blockchain valid?', razCoin.isChainValid() ? 'Yes!' : 'No :(');
-  console.log('Count of coins in blockchain:', razCoin.printSumOfCoinsInBlockchain());
-  console.log('Sum of coins mined by all blocks in blockchain:', razCoin.printSumOfCoinsMinedOnAllBlocks());
+
+  console.log('\nPrint balance of ALL wallets in blockchain:');
+  const walletToBalance = razCoin.getSumOfCoinsOfEachWallet();
+  console.table(Object.entries(walletToBalance).map(kvp => ({ address: kvp[0].substring(0, 9), coins: kvp[1] })));
+  console.log('Count of coins in whole blockchain 💵:', razCoin.getSumOfCoinsInWholeBlockchain());
+  console.log('Sum of coins mined by all blocks in blockchain 👷️:', razCoin.getSumOfCoinsMinedOnAllBlocks());
+  console.log('Sum of coins burned 🔥:', razCoin.getSumOfCoinsBurned());
 }
 
 main().catch(console.error);

@@ -15,6 +15,8 @@ class Blockchain {
   private readonly chain: Block[];
   private readonly difficulty: number;
   private readonly miningReward: number;
+  private readonly BURN_ADDRESS = '0x0';
+  private burnedCoins: number = 0;
 
   constructor(private readonly miningRewardAddress: string) {
     this.chain = [this.createGenesisBlock()];
@@ -23,7 +25,7 @@ class Blockchain {
     this.miningReward = 20;
   }
 
-  createGenesisBlock(): Block {
+  private createGenesisBlock(): Block {
     return new Block(Date.parse('2022-01-01'), [], '0');
   }
 
@@ -31,7 +33,7 @@ class Blockchain {
    * Returns the latest block on our chain. Useful when you want to create a
    * new Block and you need the hash of the previous Block.
    */
-  getLatestBlock(): Block {
+  public getLatestBlock(): Block {
     return this.chain[this.chain.length - 1];
   }
 
@@ -41,7 +43,7 @@ class Blockchain {
    * the miner address.
    * Returns boolean if done with all pending transactions or not.
    */
-  minePendingTransactions(): boolean {
+  public minePendingTransactions(): boolean {
     const pendingTransactionsOnNextBlock = this.pendingTransactions.getPendingTransactionsOnNextBlock();
 
     if (pendingTransactionsOnNextBlock?.length === 0) {
@@ -49,9 +51,11 @@ class Blockchain {
       return this.pendingTransactions.countPendingTransactions() === 0;
     }
 
-    // add reward transaction!
-    const rewardTx = new Transaction(null, this.miningRewardAddress, this.miningReward);
-    const transactionsInBlock: Transaction[] = [...pendingTransactionsOnNextBlock, rewardTx];
+    const minerReward = this.miningReward + pendingTransactionsOnNextBlock.length; // base + 1 coin for each tx
+    const rewardTx = new Transaction(null, this.miningRewardAddress, minerReward);
+    const burnTx = this.createBurnTransaction();
+    // add reward + burn transactions:
+    const transactionsInBlock: Transaction[] = [...pendingTransactionsOnNextBlock, rewardTx, burnTx];
 
     // Create and mine the block:
     const block = new Block(Date.now(), transactionsInBlock, this.getLatestBlock().hash);
@@ -59,14 +63,21 @@ class Blockchain {
     this.pendingTransactions.blockHaveBeenMined();
     this.chain.push(block);
 
+    // after mining, find burning type of transactions and add amount to burn count
+    transactionsInBlock.forEach(burnTransaction => {
+      if (burnTransaction.toAddress === this.BURN_ADDRESS) {
+        this.burnedCoins += burnTransaction.amount;
+      }
+    });
+
     const transactionsNumberLeft = this.pendingTransactions.countPendingTransactions();
-    console.log(`Block mined: ${block.hash}, pending transactions left:`, transactionsNumberLeft);
+    console.log(`Block #${this.chain.length} mined: ${block.hash}, pending transactions left:`, transactionsNumberLeft);
 
     const isDoneMiningAll = transactionsNumberLeft === 0;
     return isDoneMiningAll;
   }
 
-  async mineUntilNoPendingTransactions(waitTime?: number): Promise<void> {
+  public async mineUntilNoPendingTransactions(waitTime?: number): Promise<void> {
     const amount = this.pendingTransactions.countPendingTransactions();
     if (amount === 0) {
       console.log('no transactions to mine...');
@@ -83,7 +94,7 @@ class Blockchain {
    * next time the mining process starts). This verifies that the given
    * transaction is properly signed.
    */
-  addTransaction(transaction: Transaction) {
+  public addTransaction(transaction: Transaction) {
     if (!transaction.fromAddress || !transaction.toAddress) {
       throw new Error('Transaction must include from and to address');
     }
@@ -120,15 +131,14 @@ class Blockchain {
       }
     }
 
-    // decide if this transaction going to be included in next block or not, inserting queue:
+    // inserting QUEUE - decide if this transaction going to be included in next block or not:
     this.pendingTransactions.addTransaction(transaction);
-    //console.log('transaction added: %s', transaction);
   }
 
   /**
    * Returns the balance of a given wallet address.
    */
-  getBalanceOfAddress(address: string): number {
+  public getBalanceOfAddress(address: string): number {
     let balance = 0;
 
     for (const block of this.chain) {
@@ -150,7 +160,7 @@ class Blockchain {
    * Returns a list of all transactions that happened
    * to and from the given wallet address.
    */
-  getAllTransactionsForWallet(address: string): Transaction[] {
+  public getAllTransactionsForWallet(address: string): Transaction[] {
     const txs = [];
 
     for (const block of this.chain) {
@@ -170,7 +180,7 @@ class Blockchain {
    * linked together and nobody has tampered with the hashes. By checking
    * the blocks it also verifies the (signed) transactions inside them.
    */
-  isChainValid(): boolean {
+  public isChainValid(): boolean {
     // Check if the Genesis block hasn't been tampered with by comparing
     // the output of createGenesisBlock with the first block on our chain
     const realGenesis = JSON.stringify(this.createGenesisBlock());
@@ -201,7 +211,7 @@ class Blockchain {
     return true;
   }
 
-  hasTransactionInBlockChain(transaction: Transaction) {
+  public hasTransactionInBlockChain(transaction: Transaction) {
     for (let block of this.chain) {
       if (block.hasTransactionInBlock(transaction)) {
         return true;
@@ -211,7 +221,7 @@ class Blockchain {
     return false;
   }
 
-  async loadTransactionsIntoBlocks(transactionPool: Transaction[], wallets: Wallet[]) {
+  public async loadTransactionsIntoBlocks(transactionPool: Transaction[], wallets: Wallet[]) {
     const walletsAsDictionary = keyBy(wallets, wallet => wallet.publicKey);
     for (const jsonTransaction of transactionPool) {
       if (!jsonTransaction.fromAddress || jsonTransaction.amount <= 0) {
@@ -231,18 +241,18 @@ class Blockchain {
     await this.mineUntilNoPendingTransactions();
   }
 
-  async giveInitialBalanceToClients(wallets: string[]) {
+  public async giveInitialBalanceToClients(wallets: string[]) {
     const initialBalance = 100;
     for (const wallet of wallets) {
       const transaction = new Transaction(null, wallet, initialBalance);
       this.pendingTransactions.addTransaction(transaction);
-      console.log(`gave ${initialBalance} initial coins to ${wallet.substring(0, 7)}`);
+      console.log(`gave ${initialBalance} initial coins to ${wallet.substring(0, 9)}`);
     }
     await this.mineUntilNoPendingTransactions();
-    console.log('Mined initial giveaway block\n');
+    console.log(`Mined initial giveaway block (${initialBalance} to each wallet)\n`);
   }
 
-  printSumOfCoinsInBlockchain(): number {
+  public getSumOfCoinsOfEachWallet(): { [address: string]: number } {
     const addressToBalance: { [address: string]: number } = {};
     for (const block of this.chain) {
       for (const trans of block.transactions) {
@@ -261,10 +271,16 @@ class Blockchain {
         }
       }
     }
+
+    return addressToBalance;
+  }
+
+  public getSumOfCoinsInWholeBlockchain(): number {
+    const addressToBalance = this.getSumOfCoinsOfEachWallet();
     return Object.values(addressToBalance).reduce((a, b) => a + b, 0);
   }
 
-  printSumOfCoinsMinedOnAllBlocks(): number {
+  public getSumOfCoinsMinedOnAllBlocks(): number {
     let coinsMined = 0;
     for (const block of this.chain) {
       for (const trans of block.transactions) {
@@ -272,6 +288,22 @@ class Blockchain {
       }
     }
     return coinsMined;
+  }
+
+  public getSumOfCoinsBurned(): number {
+    return this.burnedCoins;
+  }
+
+  private createBurnTransaction(): Transaction {
+    const burnFee = this.chain.length; // number of chain blocks-1 (not include the future block)
+    const burnTx = new Transaction(null, this.BURN_ADDRESS, burnFee);
+    return burnTx;
+  }
+
+  public burnYourCoins(yourAddress: string, amount: number, signKey: EC.KeyPair): void {
+    const burnTx = new Transaction(yourAddress, this.BURN_ADDRESS, amount);
+    burnTx.signTransaction(signKey);
+    this.addTransaction(burnTx);
   }
 }
 

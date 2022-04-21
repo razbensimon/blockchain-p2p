@@ -29,9 +29,10 @@ export async function runBlockchain() {
   await razCoin.giveInitialBalanceToClients(clientsWallets.map(c => c.publicKey));
 
   // Initial load transactions from file
-  console.log('Initial load transactions from file:');
-  await razCoin.loadTransactionsIntoBlocks(INITIAL_TRANSACTIONS as Transaction[], clientsWallets);
-  console.log('Loaded transactions from json file\n');
+  console.log('Start load transactions from file 📂:');
+  const fileTransactions = INITIAL_TRANSACTIONS as Transaction[];
+  await razCoin.loadTransactionsIntoBlocks(fileTransactions, clientsWallets);
+  console.log(`Loaded ${fileTransactions.length} transactions from json file 📂\n`);
 
   return { razCoin, fullNodeAddress, keyPair };
 }
